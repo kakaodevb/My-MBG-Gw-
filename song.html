@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My MBG Gw - Music Player</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  @font-face{
+    font-family: 'OswaldBold';
+    src: url('oswald-bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face{
+    font-family: 'FiraCondBold';
+    src: url('firasanscondensed-bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face{
+    font-family: 'FiraCondBook';
+    src: url('firasanscondensed-book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  :root{
+    --navy: #1b4965;
+    --navy-bright: #62b6cb;
+    --navy-glow: #bee9e8;
+    --gelap: #070b12;
+  }
+
+  *{
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    font-family: 'FiraCondBook', sans-serif;
+    background: var(--gelap) !important;
+    color: #ffffff;
+    overflow: hidden;
+  }
+
+  /* BACKGROUND LAYER */
+  .bg-layer{
+    position: fixed;
+    inset: 0;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .bg-dim{
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 11, 18, 0.85);
+    z-index: 1;
+  }
+
+  /* =========================
+     NAVBAR DRAWER
+  ========================= */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: #000000;
+    border-right: 2px solid var(--navy-bright);
+    z-index: 999999;
+    transition: left 0.3s ease;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar.active {
+    left: 0;
+  }
+
+  .closeNavbar {
+    align-self: flex-end;
+    font-size: 1.3rem;
+    color: var(--navy-bright);
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-family: 'FiraCondBold', sans-serif;
+  }
+
+  .navbarHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(98, 182, 203, 0.2);
+    margin-bottom: 15px;
+  }
+
+  .navLogo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 1px solid var(--navy-bright);
+  }
+
+  .navText p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  #navUsername {
+    font-family: 'FiraCondBold', sans-serif;
+    color: var(--navy-bright);
+    font-size: 1rem;
+  }
+
+  #navEmail, #navTitle {
+    color: #aaa;
+    font-size: 0.75rem;
+  }
+
+  .navbarMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+
+  .navMenuBox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #0d1b2a;
+    border: 1px solid rgba(98, 182, 203, 0.3);
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #ffffff;
+    font-family: 'FiraCondBold', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .navMenuBox:hover {
+    background: #1b263b;
+    border-color: var(--navy-bright);
+  }
+
+  .navMenuBox img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    z-index: 99999;
+  }
+
+  .overlay.active {
+    display: block;
+  }
+
+  /* =========================
+     SCROLL CONTAINER DENGAN EFEK BAYANGAN GELAP DI ATAS & BAWAH
+  ========================= */
+  .scroll-fade-container {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--navy-bright) #111;
+  }
+
+  /* Efek Bayangan Gelap Menyelimuti Atas & Bawah */
+  .scroll-fade-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(7, 11, 18, 0.95), transparent);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .scroll-fade-container::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to top, rgba(7, 11, 18, 0.95), transparent);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .scroll-fade-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-fade-container::-webkit-scrollbar-thumb {
+    background: var(--navy-bright);
+    border-radius: 3px;
+  }
+
+  /* CONTENT WRAP (SPOTIFY STYLE PLAYER) */
+  .content-wrap {
+    padding: 40px 20px 100px 20px;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .player-header {
+    width: 100%;
+    text-align: center;
+    font-family: 'OswaldBold', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: #aaa;
+    margin-bottom: 20px;
+  }
+
+  /* ALBUM ART DENGAN EFEK CINEMATIC */
+  .album-container {
+    width: 250px;
+    height: 250px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.8), 
+      0 0 25px rgba(98, 182, 203, 0.2);
+    border: 1px solid rgba(98, 182, 203, 0.4);
+    margin-bottom: 25px;
+    position: relative;
+    transform: perspective(1000px) rotateX(2deg);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .album-container:hover {
+    transform: perspective(1000px) rotateX(0deg) scale(1.02);
+    box-shadow: 
+      0 25px 50px rgba(0, 0, 0, 0.9), 
+      0 0 30px rgba(98, 182, 203, 0.35);
+  }
+
+  .album-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.05) saturate(1.05);
+    transition: filter 0.3s ease;
+  }
+
+  .album-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    border-radius: 16px;
+  }
+
+  /* SONG INFO */
+  .song-info {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
+    padding: 0 10px;
+  }
+
+  .song-title {
+    font-family: 'FiraCondBold', sans-serif;
+    font-size: 1.7rem;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+  }
+
+  .song-artist {
+    font-family: 'FiraCondBook', sans-serif;
+    font-size: 1.05rem;
+    color: #a0a0a0;
+    margin: 0;
+  }
+
+  /* PROGRESS BAR SPOTIFY STYLE */
+  .progress-container {
+    width: 100%;
+    padding: 0 10px;
+    margin-bottom: 22px;
+  }
+
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--navy-bright);
+    border-radius: 3px;
+    transition: width 0.1s linear;
+  }
+
+  .time-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 8px;
+  }
+
+  /* PLAYER CONTROLS (DITAMBAH TOMBOL LOOP) */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    margin-bottom: 30px;
+  }
+
+  .control-btn {
+    background: #0b1329;
+    border: 2px solid var(--navy);
+    border-radius: 50%;
+    color: var(--navy-bright);
+    cursor: pointer;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .control-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  .control-btn:hover {
+    background: #1b2a4a;
+    border-color: var(--navy-bright);
+    transform: scale(1.1);
+  }
+
+  /* Tombol Loop Aktif */
+  .control-btn.active-loop {
+    background: #1b2a4a;
+    border-color: var(--navy-bright);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(98, 182, 203, 0.6);
+  }
+
+  .play-pause-btn {
+    width: 60px;
+    height: 60px;
+    background: #0b1329;
+    color: var(--navy-bright);
+    border: 2px solid var(--navy);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(27, 73, 101, 0.5);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .play-pause-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--navy-bright);
+  }
+
+  .play-pause-btn:hover {
+    background: #1b2a4a;
+    border-color: var(--navy-bright);
+    transform: scale(1.05);
+  }
+
+  .play-pause-btn:active {
+    transform: scale(0.92);
+  }
+
+  /* =========================
+     DETAIL & MAKNA LAGU SECTION
+  ========================= */
+  .meaning-box {
+    width: 100%;
+    background: #0b1329;
+    border: 1px solid rgba(98, 182, 203, 0.3);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+
+  .meaning-title {
+    font-family: 'FiraCondBold', sans-serif;
+    font-size: 1.15rem;
+    color: var(--navy-bright);
+    margin: 0 0 14px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .song-details-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    border-bottom: 1px solid rgba(98, 182, 203, 0.2);
+    padding-bottom: 14px;
+  }
+
+  .song-details-list li {
+    margin-bottom: 6px;
+  }
+
+  .song-details-list strong {
+    color: var(--navy-bright);
+  }
+
+  .meaning-desc {
+    font-family: 'FiraCondBook', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #cfcfcf;
+    margin: 0;
+  }
+</style>
+</head>
+
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="bg-dim"></div>
+
+  <!-- NAVBAR DRAWER -->
+  <div id="navbar" class="navbar">
+      <div class="closeNavbar" onclick="toggleNavbar()">✕</div>
+      <div class="navbarHeader">
+          <img src="icon.png" class="navLogo">
+          <div class="navText">
+              <p id="navUsername"></p>
+              <p id="navEmail"></p>
+              <p id="navTitle"></p>
+          </div>
+      </div>
+      <div class="navbarMenu">
+          <a href="index.html" class="navMenuBox"><img src="icon.png"><span>Home</span></a>
+          <a href="gallery.html" class="navMenuBox"><img src="voucher.png"><span>Gallery</span></a>
+          <a href="song.html" class="navMenuBox"><img src="voucher.png"><span>Putar Music</span></a>
+          <a href="about.html" class="navMenuBox"><img src="debt.png"><span>About</span></a>
+      </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="toggleNavbar()"></div>
+
+  <!-- SCROLL CONTAINER DENGAN EFEK BAYANGAN GELAP DI ATAS & BAWAH -->
+  <div class="scroll-fade-container">
+      <div class="content-wrap">
+          <div class="player-header">
+              <span>NOW PLAYING</span>
+          </div>
+
+          <!-- ALBUM ART -->
+          <div class="album-container">
+              <img id="albumImg" src="" alt="Album Art" class="album-art" onerror="this.src='icon.png'">
+          </div>
+
+          <!-- SONG INFO -->
+          <div class="song-info">
+              <h1 class="song-title" id="songTitle"></h1>
+              <p class="song-artist" id="songArtist"></p>
+          </div>
+
+          <!-- PROGRESS BAR -->
+          <div class="progress-container">
+              <div class="progress-bar-bg" id="progressBarBg" onclick="seekAudio(event)">
+                  <div class="progress-bar-fill" id="progressBarFill"></div>
+              </div>
+              <div class="time-info">
+                  <span id="currentTime">0:00</span>
+                  <span id="durationTime">0:00</span>
+              </div>
+          </div>
+
+          <!-- PLAYER CONTROLS (DITAMBAH TOMBOL LOOP) -->
+          <div class="player-controls">
+              <!-- Tombol Previous -->
+              <button class="control-btn" onclick="prevSong()" title="Lagu Sebelumnya">
+                  <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              </button>
+
+              <!-- Tombol Loop / Repeat -->
+              <button class="control-btn" id="loopBtn" onclick="toggleLoop()" title="Ulangi Lagu Ini">
+                  <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6z"/></svg>
+              </button>
+
+              <!-- Tombol Play / Pause -->
+              <button class="play-pause-btn" id="mainPlayBtn" onclick="togglePlayPause()" title="Play / Pause">
+                  <svg id="playPauseIcon" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                  </svg>
+              </button>
+
+              <!-- Tombol Next -->
+              <button class="control-btn" onclick="nextSong()" title="Lagu Berikutnya">
+                  <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+          </div>
+
+          <!-- KOTAK DETAIL & MAKNA LAGU -->
+          <div class="meaning-box">
+              <h2 class="meaning-title" id="infoTitle">Tentang & Makna Lagu</h2>
+              
+              <ul class="song-details-list" id="songDetailsList">
+                  <!-- Diisi via JS -->
+              </ul>
+
+              <p class="meaning-desc" id="songMeaningDesc">
+                  <!-- Diisi via JS -->
+              </p>
+          </div>
+      </div>
+  </div>
+
+  <!-- AUDIO ELEMENT -->
+  <audio id="backsound" preload="auto"></audio>
+
+<script>
+  // Cek Login
+  const username = localStorage.getItem("username");
+  if(!username){
+      window.location.href = "login.html";
+  }
+
+  document.getElementById("navUsername").innerText = username || "Unknown User";
+  document.getElementById("navEmail").innerText = localStorage.getItem("email") || "No Email";
+  document.getElementById("navTitle").innerText = localStorage.getItem("title") || "No Title";
+
+  function toggleNavbar(){
+      document.getElementById("navbar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("active");
+  }
+
+  // Swipe support untuk buka Navbar dari kiri
+  let touchStartX = 0;
+  window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  window.addEventListener('touchend', (e) => {
+      let touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 60 && touchStartX < 40) {
+          toggleNavbar();
+      }
+  }, {passive: true});
+
+  /* =========================
+     PLAYLIST CONFIG & LOGIC
+  ========================= */
+  const playlist = [
+      {
+          title: "About You",
+          artist: "The 1975",
+          src: "backsound.mp3",
+          cover: "18.jpg",
+          details: `
+              <li><strong>Artist (Singer):</strong> The 1975 (Lead Vocal: Matty Healy, Additional Vocals: Carly Holt)</li>
+              <li><strong>Written by (Songwriters):</strong> Matthew Healy & George Daniel</li>
+              <li><strong>Produced by:</strong> Matthew Healy, George Daniel, & Jack Antonoff</li>
+              <li><strong>Album:</strong> Being Funny in a Foreign Language (2022)</li>
+              <li><strong>Genre:</strong> Pop rock / Dream pop / Shoegaze</li>
+          `,
+          meaning: `Secara keseluruhan, <strong>"About You"</strong> menggambarkan perasaan rindu, kehilangan yang mendalam, serta kenangan cinta masa lalu yang sangat sulit dilupakan. Lagu ini bercerita tentang seseorang yang gagal <em>move on</em> dan terus terjebak dalam bayang-bayang kenangan bersama mantan kekasihnya, bahkan saat menjalani aktivitas sehari-hari.`
+      },
+      {
+          title: "Shape of My Heart",
+          artist: "Backstreet Boys",
+          src: "Shape of My Hearts.mp3",
+          cover: "1.jpg",
+          details: `
+              <li><strong>Artist (Singer):</strong> Backstreet Boys</li>
+              <li><strong>Written by (Songwriters):</strong> Max Martin, Rami Yacoub, & Lisa Miskovsky</li>
+              <li><strong>Produced by:</strong> Max Martin & Rami Yacoub</li>
+              <li><strong>Album:</strong> Black & Blue (2000)</li>
+              <li><strong>Genre:</strong> Pop ballad / Soft pop</li>
+          `,
+          meaning: `<strong>"Shape of My Heart"</strong> oleh Backstreet Boys adalah balada pop emosional yang menceritakan tentang seorang narator yang menyadari kesalahan dan kecerobohannya di masa lalu dalam sebuah hubungan. Ia memohon kepada pasangan atau orang tercintanya untuk memaafkan kesalahan dan memberikan kesempatan kedua agar hubungan tersebut bisa kembali diperbaiki.`
+      }
+  ];
+
+  let currentTrackIndex = 0;
+  let isLooping = false; // Status Loop
+
+  const backsound = document.getElementById('backsound');
+  const playPauseIcon = document.getElementById('playPauseIcon');
+  const progressBarFill = document.getElementById('progressBarFill');
+  const progressBarBg = document.getElementById('progressBarBg');
+  const currentTimeEl = document.getElementById('currentTime');
+  const durationTimeEl = document.getElementById('durationTime');
+  const loopBtn = document.getElementById('loopBtn');
+
+  const songTitleEl = document.getElementById('songTitle');
+  const songArtistEl = document.getElementById('songArtist');
+  const albumImgEl = document.getElementById('albumImg');
+  const infoTitleEl = document.getElementById('infoTitle');
+  const songDetailsListEl = document.getElementById('songDetailsList');
+  const songMeaningDescEl = document.getElementById('songMeaningDesc');
+
+  function loadTrack(index) {
+      const track = playlist[index];
+      backsound.src = track.src;
+      songTitleEl.innerText = track.title;
+      songArtistEl.innerText = track.artist;
+      albumImgEl.src = track.cover;
+      infoTitleEl.innerText = `Tentang & Makna Lagu "${track.title}"`;
+      songDetailsListEl.innerHTML = track.details;
+      songMeaningDescEl.innerHTML = track.meaning;
+      backsound.load();
+  }
+
+  loadTrack(currentTrackIndex);
+
+  backsound.addEventListener('loadedmetadata', () => {
+      durationTimeEl.innerText = formatTime(backsound.duration);
+  });
+
+  backsound.addEventListener('timeupdate', () => {
+      if(backsound.duration) {
+          const percent = (backsound.currentTime / backsound.duration) * 100;
+          progressBarFill.style.width = percent + '%';
+          currentTimeEl.innerText = formatTime(backsound.currentTime);
+      }
+  });
+
+  // Logika saat lagu habis (Ended)
+  backsound.addEventListener('ended', () => {
+      if (isLooping) {
+          backsound.currentTime = 0;
+          backsound.play().catch(() => {});
+      } else {
+          nextSong();
+          backsound.play().catch(() => {});
+      }
+  });
+
+  function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = Math.floor(seconds % 60);
+      return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+  }
+
+  function togglePlayPause() {
+      if (backsound.paused) {
+          backsound.play().catch(() => {});
+          playPauseIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+      } else {
+          backsound.pause();
+          playPauseIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      }
+  }
+
+  // Tombol untuk mengaktifkan/menonaktifkan loop
+  function toggleLoop() {
+      isLooping = !isLooping;
+      if (isLooping) {
+          loopBtn.classList.add('active-loop');
+      } else {
+          loopBtn.classList.remove('active-loop');
+      }
+  }
+
+  function nextSong() {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (!backsound.paused) {
+          backsound.play().catch(() => {});
+      }
+  }
+
+  function prevSong() {
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (!backsound.paused) {
+          backsound.play().catch(() => {});
+      }
+  }
+
+  function seekAudio(e) {
+      const rect = progressBarBg.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const percent = clickX / width;
+      if(backsound.duration) {
+          backsound.currentTime = percent * backsound.duration;
+      }
+  }
+</script>
+
+</body>
+</html>

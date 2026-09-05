@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My MBG Gw - Gallery</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  @font-face{
+    font-family: 'OswaldBold';
+    src: url('oswald-bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face{
+    font-family: 'FiraCondBold';
+    src: url('firasanscondensed-bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face{
+    font-family: 'FiraCondBook';
+    src: url('firasanscondensed-book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  :root{
+    --cyan: #00e5ff;
+    --gelap: #0a0a0a;
+  }
+
+  *{
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    font-family: 'FiraCondBook', sans-serif;
+    background: var(--gelap) !important;
+    color: #ffffff;
+    overflow: hidden;
+  }
+
+  /* BACKGROUND LAYER */
+  .bg-layer{
+    position: fixed;
+    inset: 0;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  .bg-dim{
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 10, 7, 0.75);
+    z-index: 1;
+  }
+
+  /* =========================
+     NAVBAR DRAWER
+  ========================= */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: #000000;
+    border-right: 2px solid var(--cyan);
+    z-index: 999999;
+    transition: left 0.3s ease;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar.active {
+    left: 0;
+  }
+
+  .closeNavbar {
+    align-self: flex-end;
+    font-size: 1.3rem;
+    color: var(--cyan);
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-family: 'FiraCondBold', sans-serif;
+  }
+
+  .navbarHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    margin-bottom: 15px;
+  }
+
+  .navLogo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 1px solid var(--cyan);
+  }
+
+  .navText p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  #navUsername {
+    font-family: 'FiraCondBold', sans-serif;
+    color: var(--cyan);
+    font-size: 1rem;
+  }
+
+  #navEmail, #navTitle {
+    color: #aaa;
+    font-size: 0.75rem;
+  }
+
+  .navbarMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+
+  .navMenuBox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #0b0f0c;
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #ffffff;
+    font-family: 'FiraCondBold', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .navMenuBox:hover {
+    background: #002228;
+    border-color: var(--cyan);
+  }
+
+  .navMenuBox img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    z-index: 99999;
+  }
+
+  .overlay.active {
+    display: block;
+  }
+
+  /* =========================
+     SCROLL CONTAINER DENGAN EFEK GELAP DI ATAS & BAWAH
+  ========================= */
+  .scroll-fade-container {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) #111;
+  }
+
+  /* Efek Bayangan Gelap Menyelimuti Atas & Bawah (Fixed Shadow Overlay) */
+  .scroll-fade-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(5, 8, 6, 0.95), transparent);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .scroll-fade-container::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to top, rgba(5, 8, 6, 0.95), transparent);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .scroll-fade-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-fade-container::-webkit-scrollbar-thumb {
+    background: var(--cyan);
+    border-radius: 3px;
+  }
+
+  /* CONTENT WRAP */
+  .content-wrap {
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 40px 16px 120px 16px;
+  }
+
+  div.headerBox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    background: transparent;
+  }
+
+  .headerRight h1 {
+    font-family: 'OswaldBold', sans-serif;
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .headerRight h1 span {
+    color: var(--cyan);
+  }
+
+  .headerRight p {
+    color: #aaa;
+    font-size: 0.82rem;
+    margin: 4px 0 0 0;
+  }
+
+  /* BANNER DENGAN KOTAK TULISAN & EFEK GELAP PUDAR */
+  .banner-container {
+    position: relative;
+    width: 100%;
+    height: 175px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 2px solid rgba(0, 229, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  }
+
+  .banner-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(5, 8, 6, 0.88) 0%, rgba(5, 8, 6, 0.6) 60%, rgba(5, 8, 6, 0.85) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    border: 1px solid rgba(0, 229, 255, 0.2);
+  }
+
+  .banner-title {
+    font-family: 'OswaldBold', sans-serif;
+    font-size: 1.6rem;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  }
+
+  .banner-title span {
+    color: var(--cyan);
+  }
+
+  .banner-subtitle {
+    font-family: 'FiraCondBook', sans-serif;
+    font-size: 0.9rem;
+    color: #b8c5c2;
+    margin: 0;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+  }
+
+  /* =========================
+     ACCORDION CARD STYLE
+  ========================= */
+  .accordion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .accordion-card {
+    background: #050806;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(0, 229, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .accordion-header {
+    position: relative;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    
+    background-image: linear-gradient(90deg, rgba(5, 8, 6, 0.9) 20%, rgba(5, 8, 6, 0.5) 70%, rgba(5, 8, 6, 0.8) 100%), url('prev.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .accordion-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .accordion-icon-box {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--cyan);
+    flex-shrink: 0;
+  }
+
+  .accordion-icon-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .accordion-title-box h3 {
+    margin: 0;
+    font-family: 'FiraCondBold', sans-serif;
+    font-size: 1.15rem;
+    color: #ffffff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  }
+
+  .accordion-arrow {
+    position: relative;
+    z-index: 2;
+    font-size: 1rem;
+    color: var(--cyan);
+    transition: transform 0.3s ease;
+    background: rgba(0, 0, 0, 0.7);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 229, 255, 0.5);
+  }
+
+  .accordion-card.active .accordion-arrow {
+    transform: rotate(180deg);
+  }
+
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out;
+    background: #020403;
+  }
+
+  .accordion-card.active .accordion-body {
+    max-height: 300px;
+    border-top: 1px solid rgba(0, 229, 255, 0.2);
+    padding: 16px;
+  }
+
+  .gallery-horizontal-scroll {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) #111;
+  }
+
+  .gallery-horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .gallery-horizontal-scroll::-webkit-scrollbar-thumb {
+    background: var(--cyan);
+    border-radius: 3px;
+  }
+
+  .gallery-item {
+    background: #000;
+    border: 2px solid rgba(0, 229, 255, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .gallery-item:hover {
+    border-color: var(--cyan);
+    transform: scale(1.03);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* =========================
+     FLOATING DISK MUSIC PLAYER
+  ========================= */
+  #diskPlayer {
+    position: fixed;
+    width: 78px;
+    height: 78px;
+    right: 22px;
+    bottom: 30px;
+    z-index: 40000;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #diskPlayer.dragging {
+    cursor: grabbing;
+  }
+
+  #diskPlayer img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+    object-fit: cover;
+    pointer-events: none;
+    border: 2px solid var(--cyan);
+    box-shadow: 
+      0 0 0 3px rgba(0, 229, 255, 0.3),
+      0 6px 18px rgba(0,0,0,0.55);
+    animation: diskSpin 3.5s linear infinite;
+    animation-play-state: paused;
+  }
+
+  #diskPlayer img.spinning {
+    animation-play-state: running;
+  }
+
+  @keyframes diskSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  #diskPlayer::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    box-shadow: 0 0 14px 4px rgba(0, 229, 255, 0.0);
+    transition: box-shadow 0.3s ease;
+    pointer-events: none;
+  }
+
+  #diskPlayer.playing::after {
+    box-shadow: 0 0 16px 5px rgba(0, 229, 255, 0.55);
+  }
+
+  /* LIGHTBOX POPUP */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    padding: 20px;
+  }
+
+  #lightbox.active {
+    display: flex;
+  }
+
+  #lightbox img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 10px;
+    border: 2px solid var(--cyan);
+  }
+</style>
+</head>
+
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="bg-dim"></div>
+
+  <!-- NAVBAR DRAWER -->
+  <div id="navbar" class="navbar">
+      <div class="closeNavbar" onclick="toggleNavbar()">✕</div>
+      <div class="navbarHeader">
+          <img src="icon.png" class="navLogo">
+          <div class="navText">
+              <p id="navUsername"></p>
+              <p id="navEmail"></p>
+              <p id="navTitle"></p>
+          </div>
+      </div>
+      <div class="navbarMenu">
+          <a href="index.html" class="navMenuBox"><img src="icon.png"><span>Home</span></a>
+          <a href="gallery.html" class="navMenuBox"><img src="voucher.png"><span>Gallery</span></a>
+          <a href="song.html" class="navMenuBox"><img src="voucher.png"><span>Putar Music</span></a>
+          <a href="about.html" class="navMenuBox"><img src="debt.png"><span>About</span></a>
+      </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="toggleNavbar()"></div>
+
+  <!-- SCROLL CONTAINER DENGAN EFEK BAYANGAN GELAP DI ATAS & BAWAH -->
+  <div class="scroll-fade-container">
+      <div class="content-wrap">
+          <div class="headerBox">
+              <div class="headerRight">
+                  <h1>MY MBG <span>GW</span></h1>
+                  <p>Koleksi Galeri Foto Pribadi</p>
+              </div>
+          </div>
+
+          <!-- BANNER -->
+          <div class="banner-container">
+              <img src="Banner.jpg" alt="Banner" onerror="this.style.display='none'">
+              <div class="banner-overlay">
+                  <h2 class="banner-title">My MBG <span>Gw</span></h2>
+                  <p class="banner-subtitle">Eksklusif Galeri Momen & Kenangan Terbaik</p>
+              </div>
+          </div>
+
+          <!-- ACCORDION CARD LIST -->
+          <div class="accordion-container">
+              
+              <!-- CARD 1 (Foto 1-5) -->
+              <div class="accordion-card active" id="card1">
+                  <div class="accordion-header" onclick="toggleAccordion(1)">
+                      <div class="accordion-left">
+                          <div class="accordion-icon-box">
+                              <img src="icon.jpg" alt="Icon">
+                          </div>
+                          <div class="accordion-title-box">
+                              <h3>Gallery 1</h3>
+                          </div>
+                      </div>
+                      <div class="accordion-arrow">▼</div>
+                  </div>
+                  <div class="accordion-body">
+                      <div class="gallery-horizontal-scroll" id="scroll1"></div>
+                  </div>
+              </div>
+
+              <!-- CARD 2 (Foto 6-10) -->
+              <div class="accordion-card" id="card2">
+                  <div class="accordion-header" onclick="toggleAccordion(2)">
+                      <div class="accordion-left">
+                          <div class="accordion-icon-box">
+                              <img src="icon.jpg" alt="Icon">
+                          </div>
+                          <div class="accordion-title-box">
+                              <h3>Gallery 2</h3>
+                          </div>
+                      </div>
+                      <div class="accordion-arrow">▼</div>
+                  </div>
+                  <div class="accordion-body">
+                      <div class="gallery-horizontal-scroll" id="scroll2"></div>
+                  </div>
+              </div>
+
+              <!-- CARD 3 (Foto 11-15) -->
+              <div class="accordion-card" id="card3">
+                  <div class="accordion-header" onclick="toggleAccordion(3)">
+                      <div class="accordion-left">
+                          <div class="accordion-icon-box">
+                              <img src="icon.jpg" alt="Icon">
+                          </div>
+                          <div class="accordion-title-box">
+                              <h3>Gallery 3</h3>
+                          </div>
+                      </div>
+                      <div class="accordion-arrow">▼</div>
+                  </div>
+                  <div class="accordion-body">
+                      <div class="gallery-horizontal-scroll" id="scroll3"></div>
+                  </div>
+              </div>
+
+              <!-- CARD 4 (Foto 16-20) -->
+              <div class="accordion-card" id="card4">
+                  <div class="accordion-header" onclick="toggleAccordion(4)">
+                      <div class="accordion-left">
+                          <div class="accordion-icon-box">
+                              <img src="icon.jpg" alt="Icon">
+                          </div>
+                          <div class="accordion-title-box">
+                              <h3>Gallery 4</h3>
+                          </div>
+                      </div>
+                      <div class="accordion-arrow">▼</div>
+                  </div>
+                  <div class="accordion-body">
+                      <div class="gallery-horizontal-scroll" id="scroll4"></div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+  </div>
+
+  <!-- FLOATING DISK MUSIC PLAYER -->
+  <div id="diskPlayer">
+    <img src="Disk.png" alt="Music Disk" id="diskImg" draggable="false">
+  </div>
+
+  <!-- AUDIO ELEMENT -->
+  <audio id="backsound" src="backsound.mp3" preload="auto" loop></audio>
+
+  <!-- LIGHTBOX IMAGE PREVIEW -->
+  <div id="lightbox" onclick="closeLightbox()">
+      <img id="lightboxImg" src="" alt="Zoom">
+  </div>
+
+<script>
+  // Cek Login
+  const username = localStorage.getItem("username");
+  if(!username){
+      window.location.href = "login.html";
+  }
+
+  document.getElementById("navUsername").innerText = username || "Unknown User";
+  document.getElementById("navEmail").innerText = localStorage.getItem("email") || "No Email";
+  document.getElementById("navTitle").innerText = localStorage.getItem("title") || "No Title";
+
+  function toggleNavbar(){
+      document.getElementById("navbar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("active");
+  }
+
+  // Swipe support untuk buka Navbar dari kiri
+  let touchStartX = 0;
+  window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  window.addEventListener('touchend', (e) => {
+      let touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 60 && touchStartX < 40) {
+          toggleNavbar();
+      }
+  }, {passive: true});
+
+  /* =========================
+     RENDER FOTO (1 SAMPAI 20)
+  ========================= */
+  function renderGallery(start, end, scrollId){
+      const container = document.getElementById(scrollId);
+      for(let i = start; i <= end; i++){
+          container.innerHTML += `
+              <div class="gallery-item" onclick="openLightbox('${i}.jpg')">
+                  <img src="${i}.jpg" alt="Foto ${i}" onerror="this.src='icon.png'">
+              </div>
+          `;
+      }
+  }
+
+  renderGallery(1, 5, "scroll1");
+  renderGallery(6, 10, "scroll2");
+  renderGallery(11, 15, "scroll3");
+  renderGallery(16, 20, "scroll4");
+
+  /* =========================
+     ACCORDION TOGGLE LOGIC
+  ========================= */
+  function toggleAccordion(num){
+      const card = document.getElementById(`card${num}`);
+      card.classList.toggle("active");
+  }
+
+  function openLightbox(src){
+      document.getElementById("lightboxImg").src = src;
+      document.getElementById("lightbox").classList.add("active");
+  }
+
+  function closeLightbox(){
+      document.getElementById("lightbox").classList.remove("active");
+  }
+
+  /* =========================
+     FLOATING DISK MUSIC PLAYER JS
+  ========================= */
+  const diskPlayer = document.getElementById('diskPlayer');
+  const diskImg = document.getElementById('diskImg');
+  const backsound = document.getElementById('backsound');
+
+  let isDragging = false;
+  let hasMoved = false;
+  let startX = 0, startY = 0;
+  let originX = 0, originY = 0;
+
+  function setDiskPosition(x, y) {
+    const maxX = window.innerWidth - diskPlayer.offsetWidth;
+    const maxY = window.innerHeight - diskPlayer.offsetHeight;
+    x = Math.min(Math.max(x, 0), maxX);
+    y = Math.min(Math.max(y, 0), maxY);
+
+    diskPlayer.style.right = 'auto';
+    diskPlayer.style.bottom = 'auto';
+    diskPlayer.style.left = x + 'px';
+    diskPlayer.style.top = y + 'px';
+  }
+
+  function getPointer(e) {
+    if (e.touches && e.touches.length) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  function dragStart(e) {
+    isDragging = true;
+    hasMoved = false;
+    diskPlayer.classList.add('dragging');
+
+    const p = getPointer(e);
+    startX = p.x;
+    startY = p.y;
+
+    const rect = diskPlayer.getBoundingClientRect();
+    originX = rect.left;
+    originY = rect.top;
+  }
+
+  function dragMove(e) {
+    if (!isDragging) return;
+
+    const p = getPointer(e);
+    const dx = p.x - startX;
+    const dy = p.y - startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+      hasMoved = true;
+    }
+
+    setDiskPosition(originX + dx, originY + dy);
+    if (e.cancelable) e.preventDefault();
+  }
+
+  function dragEnd() {
+    isDragging = false;
+    diskPlayer.classList.remove('dragging');
+  }
+
+  diskPlayer.addEventListener('mousedown', dragStart);
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
+
+  diskPlayer.addEventListener('touchstart', dragStart, {passive: true});
+  document.addEventListener('touchmove', dragMove, {passive: false});
+  document.addEventListener('touchend', dragEnd);
+
+  // Play / Pause (klik 1x) & Reset (double klik)
+  let clickTimer = null;
+
+  function togglePlayPause() {
+    if (backsound.paused) {
+      backsound.play().catch(() => {});
+      diskImg.classList.add('spinning');
+      diskPlayer.classList.add('playing');
+    } else {
+      backsound.pause();
+      diskImg.classList.remove('spinning');
+      diskPlayer.classList.remove('playing');
+    }
+  }
+
+  function resetSong() {
+    backsound.currentTime = 0;
+    backsound.play().catch(() => {});
+    diskImg.classList.add('spinning');
+    diskPlayer.classList.add('playing');
+  }
+
+  diskPlayer.addEventListener('click', (e) => {
+    if (hasMoved) {
+      hasMoved = false;
+      return;
+    }
+
+    if (clickTimer !== null) {
+      clearTimeout(clickTimer);
+      clickTimer = null;
+      resetSong();
+    } else {
+      clickTimer = setTimeout(() => {
+        togglePlayPause();
+        clickTimer = null;
+      }, 250);
+    }
+  });
+</script>
+
+</body>
+</html>
